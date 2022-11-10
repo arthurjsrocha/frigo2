@@ -1,0 +1,266 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	
+	<title>Frigoríficos</title>
+
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	
+	<!-- <link rel="shortcut icon" type="image/x-icon" href="docs/images/favicon.ico" /> -->
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.8.0/dist/leaflet.css" integrity="sha512-hoalWLoI8r4UszCkZ5kL8vayOGVae1oxXe/2A4AO6J9+580uKHDO3JdHb7NzwwzK5xr/Fs0W40kiNHxM9vyTtQ==" crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.8.0/dist/leaflet.js" integrity="sha512-BB3hKbKWOc9Ez/TAwyWxNXeoV9c1v6FIeYiBieIWkpLjauysF18NzgR1MBNBXf8/KABdlkX68nAhlwcDFLGPCQ==" crossorigin=""></script>
+    <link rel="stylesheet" href="Leaflet.Legend-master/src/leaflet.legend.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
+
+	<style>
+		html, body {
+			height: 100%;
+			margin: 0;
+		}
+		.leaflet-container {
+			height: 400px;
+			width: 600px;
+			max-width: 100%;
+			max-height: 100%;
+		}
+	</style>
+
+	<style>#map { width: 2000px; height: 1000px; }
+.info { padding: 6px 8px; font: 14px/16px Arial, Helvetica, sans-serif; background: white; background: rgba(255,255,255,0.8); box-shadow: 0 0 15px rgba(0,0,0,0.2); border-radius: 5px; } .info h4 { margin: 0 0 5px; color: #777; }
+.legend { text-align: left; line-height: 18px; color: #555; } .legend i { width: 18px; height: 18px; float: left; margin-right: 8px; opacity: 0.7; }</style>
+</head>
+<body>
+
+	<div id='map'></div>
+
+	    
+		<script type="text/javascript" src="tacNao.js"></script>
+		<script type="text/javascript" src="tacSim.js"></script>
+		
+
+		<script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
+		
+
+		<script src="Leaflet.Legend-master/src/leaflet.legend.js"></script>
+
+		<script type="text/javascript">
+
+			// ---- Centralização do Mapa e Zoom	
+			var map = L.map('map').setView([-7.529378, -56.371082], 5);
+
+			// ---- Mapa base e atribuição
+			var tiles = L.tileLayer('https://api.mapbox.com/styles/v1/arthurjrocha/cla9nzefb000915n41baibxqr/tiles/256/{z}/{x}/{y}@2x?access_token=pk.eyJ1IjoiYXJ0aHVyanJvY2hhIiwiYSI6ImNsMXBjeGF0OTA0eXYzY3BndWpsbm15MTgifQ.U5WAS-rQQcswwiysi7mjaQ', {
+				maxZoom: 18,
+				attribution: '<a href="https://www.linkedin.com/in/arthur-rocha-56937a234/">' +
+					'Arthur Rocha',
+				id: 'mapbox/light-v9',
+				tileSize: 512,
+				zoomOffset: -1
+			})//.addTo(map);
+
+			var tiles1 = L.tileLayer('https://api.mapbox.com/styles/v1/arthurjrocha/cla9s0q19004m15o25o2lxw5m/tiles/256/{z}/{x}/{y}@2x?access_token=pk.eyJ1IjoiYXJ0aHVyanJvY2hhIiwiYSI6ImNsMXBjeGF0OTA0eXYzY3BndWpsbm15MTgifQ.U5WAS-rQQcswwiysi7mjaQ', {
+				maxZoom: 18,
+				attribution: '<a href="https://www.linkedin.com/in/arthur-rocha-56937a234/">' +
+					'Arthur Rocha',
+				id: 'mapbox/light-v9',
+				tileSize: 512,
+				zoomOffset: -1
+			}).addTo(map);
+
+			var tiles2 = L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', {
+				maxZoom: 18,
+				attribution: '<a href="https://www.linkedin.com/in/arthur-rocha-56937a234/">' +
+					'Arthur Rocha',
+				id: 'mapbox/light-v9',
+				tileSize: 512,
+				zoomOffset: -1
+			})//.addTo(map);
+
+			// ---- control that shows state info on hover
+			var info = L.control({position: 'topright'});
+
+			info.onAdd = function (map) {
+				this._div = L.DomUtil.create('div', 'info');
+				this.update();
+				return this._div;
+			};
+
+			info.update = function (props) {
+				this._div.innerHTML = '<b></b>' +  (props ?
+					'<b>' + props.Frigorífi + '</b><br />' 
+					+ 'TAC: '+ '<b>'+props.TAC + '</b><br />'
+					+ 'Inspeção: '+ '<b>'+props.INSPEÇÃO + '</b><br />'  
+					+ 'Município: ' +'<b>'+props.Município +'</b> <br/>'
+					+ 'UF: '+ '<b>'+ props.UF + '</b>' 
+					+ ' ' : '<h4>Selecione um frigorífico</h4>') 
+					 ;
+			};
+
+			info.addTo(map);
+
+
+			// ---- get color depending on population density value
+			function getColor(d) {
+				
+			}
+
+			function style(feature) {
+				return {
+					
+				};
+			}
+
+			function highlightFeature(e) {
+				var layer = e.target;
+
+				layer.setStyle({
+					weight: 5,
+					color: 'grey',
+					dashArray: '',
+					fillOpacity: 0.1
+				});
+
+				if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) {
+					layer.bringToFront();
+				}
+
+				info.update(layer.feature.properties);
+			}
+
+			var geojson;
+
+			function resetHighlight(e) {
+				geojson.resetStyle(e.target);
+				info.update();
+			}
+
+
+			// ---- Reset 2
+			var geojson1;
+
+			function resetHighlight1(e) {
+				geojson1.resetStyle(e.target);
+				info.update();
+			}
+
+
+			function zoomToFeature(e) {
+				map.fitBounds(e.target.getBounds());
+			}
+
+			function onEachFeature(feature, layer) {
+				layer.on({
+					mouseover: highlightFeature,
+					mouseout: resetHighlight,
+					click: zoomToFeature
+				});
+			}
+
+			function onEachFeature1(feature, layer) {
+				layer.on({
+					mouseover: highlightFeature,
+					mouseout: resetHighlight1,
+					click: zoomToFeature
+				});
+			}
+
+			
+
+			// ---- COR PARA FRIGORÍFICOS COM TAC SIM
+			const geojsonMarkerOptions1 = {
+		    radius: 4,
+		    fillColor: "#91cf60",
+		    color: "#000",
+		    weight: 1,
+		    opacity: 1,
+		    fillOpacity: 1,
+		  };	
+
+		  // ---- COR PARA FRIGORÍFICOS COM TAC NÃO
+			const geojsonMarkerOptions = {
+		    radius: 4,
+		    fillColor: "#d73027",
+		    color: "#000",
+		    weight: 1,
+		    opacity: 1,
+		    fillOpacity: 1,
+		  };	
+
+
+	
+
+			// ---- UNIDADES DE CONSERVAÇÃO DE USO SUSTENTÁVEL
+			geojson = L.geoJson(tacSim, {
+				pointToLayer: function (feature, latlng) {
+      return L.circleMarker(latlng, geojsonMarkerOptions1);
+    },
+				onEachFeature: onEachFeature,
+			}).addTo(map);
+
+			// ---- UNIDADES DE CONSERVAÇÃO DE PROTEÇÃO INTEGRAL
+			geojson1 = L.geoJson(tacNao, {
+				pointToLayer: function (feature, latlng) {
+      return L.circleMarker(latlng, geojsonMarkerOptions);
+    },
+				onEachFeature: onEachFeature1,
+			}).addTo(map);
+
+			
+
+			var overlays = {
+			  'Satélite': tiles,
+			  'Monocromático': tiles1,
+			  'Navegação': tiles2
+			};
+
+			L.control.layers(overlays,{}, {
+				collapsed: false,
+				position: 'bottomright'
+
+			}).addTo(map);
+
+				
+			// ---- Legenda
+			const legend = L.control.Legend({
+				position: 'bottomleft',
+				collapsed:false,
+				symbolWidth: 24,
+				opacity: 1,
+				column:1,
+				legends:
+				[
+            {
+                label: "TAC Sim",
+                type: "circle",
+                color: "black",
+                fillColor: "#91cf60",
+                radius: 6,
+                weight: 0.1,
+                layers: geojson
+            }, {
+                label: "TAC Não",
+                type: "circle",
+                color: "black",
+                fillColor: "#d73027",
+                radius: 6,
+                weight: 0.1,
+                layers: geojson1
+            }
+             ]
+
+			}).addTo(map)
+
+			// ---- Escala 
+			L.control.scale().addTo(map)
+	
+			L.Control.geocoder().addTo(map);
+
+	</script>
+
+
+
+</body>
+</html>
